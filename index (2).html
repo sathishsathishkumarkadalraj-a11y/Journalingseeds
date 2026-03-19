@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Seeds — Your Gentle Journal</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src https://fonts.gstatic.com; connect-src *;"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body,#root{min-height:100%;width:100%;}
+
+/* ── Typography system ── */
+/* Body font: Manrope. Mono labels: DM Mono */
+body{background:#faf8f4;font-family:'Manrope',sans-serif;color:#2a2a2a;font-size:15px;line-height:1.6;}
+::selection{background:rgba(122,170,140,.22);}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:#e8e0d4;border-radius:4px;}
+
+/* Font size scale */
+/* xs  = 10px  — DM Mono labels, tags, badges */
+/* sm  = 12px  — secondary info               */
+/* md  = 14px  — body text, inputs            */
+/* lg  = 17px  — section titles               */
+/* xl  = 22px  — page titles                  */
+/* 2xl = 42px  — splash title                 */
+
+@keyframes drift{0%{transform:translate(0,0) scale(1);}100%{transform:translate(26px,16px) scale(1.05);}}
+@keyframes seedglow{0%,100%{text-shadow:0 0 20px rgba(122,170,140,.35);}50%{text-shadow:0 0 48px rgba(122,170,140,.6);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes load{from{width:0;}to{width:100%;}}
+@keyframes shimmer{0%{background-position:-200% 0;}100%{background-position:200% 0;}}
+@keyframes shake{0%,100%{transform:translateX(0);}20%,60%{transform:translateX(-8px);}40%,80%{transform:translateX(8px);}}
+@keyframes sprout{0%{transform:scale(0.6) rotate(-10deg);opacity:0;}100%{transform:scale(1) rotate(0deg);opacity:1;}}
+
+.blob{position:absolute;border-radius:50%;filter:blur(65px);opacity:.5;pointer-events:none;}
+.blob1{width:560px;height:560px;background:radial-gradient(circle,rgba(255,215,180,.62),transparent 68%);top:-140px;left:-120px;animation:drift 22s ease-in-out infinite alternate;}
+.blob2{width:430px;height:430px;background:radial-gradient(circle,rgba(190,238,208,.56),transparent 68%);top:25%;right:-95px;animation:drift 17s ease-in-out infinite alternate;animation-delay:3s;}
+.blob3{width:390px;height:390px;background:radial-gradient(circle,rgba(218,208,255,.48),transparent 68%);bottom:-75px;left:24%;animation:drift 25s ease-in-out infinite alternate;animation-delay:8s;}
+
+/* ── PIN ── */
+.pin-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#faf8f4;position:relative;overflow:hidden;}
+.pin-card{position:relative;z-index:1;background:rgba(255,255,255,.88);border:1px solid rgba(0,0,0,.07);border-radius:24px;padding:36px 32px;display:flex;flex-direction:column;align-items:center;gap:20px;width:308px;backdrop-filter:blur(12px);box-shadow:0 8px 40px rgba(0,0,0,.08);animation:fadeUp .5s ease both;}
+.pin-icon{font-size:38px;animation:sprout .6s ease both;}
+.pin-title{font-family:'Manrope',sans-serif;font-size:20px;font-weight:600;color:#2a2a2a;letter-spacing:-.01em;}
+.pin-sub{font-family:'DM Mono',monospace;font-size:10px;color:#bbb;letter-spacing:.09em;text-align:center;line-height:1.7;margin-top:-8px;}
+.pin-dots{display:flex;gap:13px;margin:2px 0;}
+.pin-dot{width:13px;height:13px;border-radius:50%;border:2px solid rgba(122,170,140,.4);transition:all .2s;}
+.pin-dot.filled{background:#7aaa8c;border-color:#7aaa8c;transform:scale(1.1);}
+.pin-dot.error{background:#e08080;border-color:#e08080;}
+.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;}
+.pin-btn{background:rgba(255,255,255,.9);border:1px solid rgba(0,0,0,.08);border-radius:13px;padding:14px 0;font-family:'Manrope',sans-serif;font-size:20px;color:#2a2a2a;cursor:pointer;transition:all .18s;user-select:none;}
+.pin-btn:hover{background:rgba(122,170,140,.1);border-color:rgba(122,170,140,.3);transform:scale(1.04);}
+.pin-btn:active{transform:scale(.96);}
+.pin-btn.del{font-size:17px;color:#bbb;}
+.pin-btn.del:hover{color:#7aaa8c;}
+.pin-err{font-family:'DM Mono',monospace;font-size:11px;color:#e08080;letter-spacing:.08em;animation:shake .4s ease;}
+.pin-link{font-family:'DM Mono',monospace;font-size:10px;color:#bbb;cursor:pointer;letter-spacing:.08em;transition:color .2s;background:none;border:none;margin-top:-6px;}
+.pin-link:hover{color:#7aaa8c;}
+.setup-step{font-family:'DM Mono',monospace;font-size:10px;color:#7aaa8c;letter-spacing:.12em;text-transform:uppercase;}
+
+/* ── Header ── */
+.hdr{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:12px 22px;background:rgba(250,248,244,.93);backdrop-filter:blur(18px);border-bottom:1px solid rgba(0,0,0,.055);flex-wrap:wrap;gap:8px;}
+.logo{display:flex;align-items:center;gap:9px;cursor:pointer;user-select:none;}
+.lmark{font-size:18px;color:#7aaa8c;animation:seedglow 4s ease-in-out infinite;display:inline-block;}
+.lname{font-family:'Manrope',sans-serif;font-size:18px;font-weight:600;letter-spacing:.08em;color:#2a2a2a;}
+.stag{font-family:'DM Mono',monospace;font-size:10px;color:#7aaa8c;letter-spacing:.08em;animation:fadeIn .3s ease;}
+.nav{display:flex;gap:1px;flex-wrap:wrap;justify-content:flex-end;align-items:center;}
+.nb{background:none;border:none;cursor:pointer;padding:6px 10px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.07em;color:#bbb;transition:all .2s;border-radius:18px;}
+.nb:hover{color:#7aaa8c;background:rgba(122,170,140,.07);}
+.na{color:#7aaa8c!important;background:rgba(122,170,140,.1)!important;}
+.lock-btn{background:none;border:1px solid rgba(0,0,0,.08);border-radius:18px;padding:5px 10px;font-family:'DM Mono',monospace;font-size:10px;color:#bbb;cursor:pointer;transition:all .2s;}
+.lock-btn:hover{border-color:rgba(122,170,140,.4);color:#7aaa8c;}
+
+/* ── Layout ── */
+.main{position:relative;z-index:1;max-width:640px;width:100%;margin:0 auto;padding:20px 18px 90px;}
+.view{display:flex;flex-direction:column;animation:fadeUp .35s ease both;}
+.arw{background:none;border:1px solid rgba(0,0,0,.1);color:#bbb;font-size:18px;border-radius:9px;padding:5px 14px;cursor:pointer;transition:all .2s;font-family:'Manrope',sans-serif;line-height:1;}
+.arw:hover:not(:disabled){border-color:rgba(122,170,140,.4);color:#7aaa8c;}
+.arw:disabled{opacity:.15;cursor:default;}
+
+/* ── Cards ── */
+.card{background:rgba(255,255,255,.78);border:1px solid rgba(0,0,0,.06);border-radius:14px;padding:16px 18px;margin-bottom:10px;backdrop-filter:blur(8px);transition:box-shadow .25s;}
+.card:hover{box-shadow:0 4px 18px rgba(0,0,0,.06);}
+.clbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#c0c0c0;margin-bottom:11px;}
+
+/* ── Journal page ── */
+.page{background:rgba(255,255,255,.86);border:1px solid rgba(0,0,0,.06);border-radius:16px;padding:22px 24px;backdrop-filter:blur(10px);box-shadow:0 2px 18px rgba(0,0,0,.04);}
+.page-title{width:100%;background:none;border:none;outline:none;font-family:'Manrope',sans-serif;font-size:20px;font-weight:600;color:#1a1a1a;letter-spacing:-.02em;margin-bottom:10px;display:block;padding:0;line-height:1.3;}
+.page-title::placeholder{color:#ddd;font-weight:300;}
+.page-body{width:100%;background:none;border:none;outline:none;font-family:'Manrope',sans-serif;font-size:15px;color:#2a2a2a;line-height:1.8;resize:none;display:block;padding:0;min-height:220px;max-height:420px;overflow-y:auto;}
+.page-body::placeholder{color:#ccc;font-style:italic;}
+.s-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#ccc;}
+.gbox-inline{background:none;border:none;border-bottom:1px solid rgba(122,170,140,.18);padding:5px 2px;width:100%;color:#2a2a2a;font-size:14px;resize:none;font-family:'Manrope',sans-serif;line-height:1.6;transition:border-color .2s;overflow:hidden;min-height:32px;outline:none;}
+.gbox-inline:focus{border-bottom-color:rgba(122,170,140,.45);}
+.gbox-inline::placeholder{color:#ddd;}
+
+/* ── Read mode ── */
+.read-page{background:rgba(255,255,255,.86);border:1px solid rgba(0,0,0,.06);border-radius:16px;padding:22px 24px;backdrop-filter:blur(10px);box-shadow:0 2px 18px rgba(0,0,0,.04);}
+.read-title{font-family:'Manrope',sans-serif;font-size:19px;font-weight:600;color:#1a1a1a;letter-spacing:-.02em;margin-bottom:10px;line-height:1.3;}
+.read-body{font-family:'Manrope',sans-serif;font-size:15px;color:#3a3a3a;line-height:1.8;white-space:pre-wrap;word-break:break-word;}
+.read-edit-btn{background:none;border:1px solid rgba(0,0,0,.1);border-radius:18px;padding:5px 13px;font-family:'DM Mono',monospace;font-size:10px;color:#bbb;cursor:pointer;transition:all .2s;letter-spacing:.05em;}
+.read-edit-btn:hover{border-color:rgba(122,170,140,.4);color:#7aaa8c;}
+.done-page{background:rgba(255,255,255,.86);border:1px solid rgba(0,0,0,.06);border-radius:16px;padding:44px 22px;backdrop-filter:blur(10px);display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;}
+.done-icon{font-size:32px;animation:sprout .5s ease both;}
+.done-msg{font-family:'Manrope',sans-serif;font-size:17px;font-weight:500;color:#2a2a2a;}
+.done-sub{font-family:'DM Mono',monospace;font-size:10px;color:#bbb;letter-spacing:.1em;}
+
+/* ── Tags ── */
+.tagbtn{background:none;border:1px solid rgba(0,0,0,.1);border-radius:18px;padding:4px 12px;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:#bbb;transition:all .2s;letter-spacing:.04em;}
+.tagbtn:hover{border-color:rgba(0,0,0,.2);color:#888;}
+.tagon{border-color:rgba(122,170,140,.4)!important;color:#7aaa8c!important;background:rgba(122,170,140,.06)!important;}
+
+/* ── Tasks ── */
+.ainp{flex:1;background:rgba(255,255,255,.88);border:1px solid rgba(0,0,0,.09);border-radius:10px;padding:9px 14px;color:#2a2a2a;font-size:16px;font-family:'Manrope',sans-serif;transition:border-color .2s;}
+.ainp:focus{outline:none;border-color:rgba(122,170,140,.5);}
+.ainp::placeholder{color:#ccc;}
+.addbtn{background:rgba(122,170,140,.13);border:1px solid rgba(122,170,140,.28);color:#7aaa8c;border-radius:10px;width:40px;font-size:20px;cursor:pointer;transition:all .2s;line-height:1;}
+.addbtn:hover{background:rgba(122,170,140,.22);transform:scale(1.05);}
+/* Task row */
+.trow{display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(255,255,255,.8);border:1px solid rgba(0,0,0,.055);border-radius:10px;margin-bottom:6px;transition:all .2s;}
+.trow:hover{border-color:rgba(0,0,0,.1);box-shadow:0 2px 8px rgba(0,0,0,.04);}
+.ttxt{flex:1;font-size:16px;color:#2a2a2a;font-family:'Manrope',sans-serif;line-height:1.45;}
+/* Dual mark buttons */
+.mark-btn{background:none;border:none;cursor:pointer;font-size:18px;padding:1px 3px;line-height:1;border-radius:6px;transition:all .15s;flex-shrink:0;}
+.mark-btn:hover{background:rgba(0,0,0,.05);transform:scale(1.15);}
+.mark-btn.active-done{background:rgba(122,170,140,.12);}
+.mark-btn.active-fail{background:rgba(220,100,100,.08);}
+
+/* ── Entry cards ── */
+.ecard{background:rgba(255,255,255,.78);border:1px solid rgba(0,0,0,.06);border-radius:13px;padding:14px 16px;margin-bottom:9px;cursor:pointer;transition:all .22s;}
+.ecard:hover{border-color:rgba(122,170,140,.28);box-shadow:0 4px 16px rgba(0,0,0,.07);transform:translateY(-1px);}
+.gchip{background:rgba(122,170,140,.08);border:1px solid rgba(122,170,140,.2);border-radius:7px;padding:3px 9px;font-size:13px;color:#7aaa8c;font-style:italic;font-family:'Manrope',sans-serif;}
+.tchip{font-family:'DM Mono',monospace;font-size:9px;padding:2px 8px;border-radius:18px;background:rgba(180,138,200,.07);border:1px solid rgba(180,138,200,.18);color:#b08ac8;letter-spacing:.05em;}
+
+/* ── Week cells ── */
+.wcell{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 3px;border-radius:9px;background:rgba(255,255,255,.5);border:1px solid rgba(0,0,0,.05);transition:all .2s;}
+.wcell.clickable:hover{border-color:rgba(122,170,140,.22);cursor:pointer;}
+
+/* ── AI box ── */
+.ai-box{background:linear-gradient(135deg,rgba(245,252,248,.97),rgba(248,245,255,.97));border:1px solid rgba(122,170,140,.18);border-radius:13px;padding:16px 18px;margin-bottom:10px;position:relative;overflow:hidden;}
+.ai-box::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#7aaa8c,#b08ac8,#d4956a);opacity:.5;}
+.ai-shimmer{background:linear-gradient(90deg,rgba(0,0,0,.04) 25%,rgba(0,0,0,.08) 50%,rgba(0,0,0,.04) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px;height:12px;margin-bottom:8px;}
+.ai-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#7aaa8c;margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.ai-text{font-family:'Manrope',sans-serif;font-size:14px;line-height:1.8;color:#555;}
+
+/* ── Calendar ── */
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.calhd{font-family:'DM Mono',monospace;font-size:9px;color:#ccc;text-align:center;padding-bottom:5px;letter-spacing:.06em;}
+.calday{aspect-ratio:1;border-radius:7px;background:rgba(0,0,0,.018);border:1px solid transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all .2s;cursor:default;}
+.calhas{background:rgba(122,170,140,.09)!important;border-color:rgba(122,170,140,.2)!important;cursor:pointer;}
+.calhas:hover{transform:scale(1.07);}
+.caltoday{border-color:#7aaa8c!important;box-shadow:0 0 8px rgba(122,170,140,.22);}
+.caln{font-family:'DM Mono',monospace;font-size:10px;color:#bbb;}
+.calhas .caln{color:#7aaa8c;}
+
+/* ── Manifestation ── */
+.man-inp{width:100%;background:rgba(212,149,106,.04);border:1px solid rgba(212,149,106,.15);border-radius:10px;padding:10px 14px;color:#2a2a2a;font-size:16px;font-family:'Manrope',sans-serif;transition:border-color .2s;resize:none;overflow:hidden;min-height:40px;outline:none;}
+.man-inp:focus{border-color:rgba(212,149,106,.4);background:rgba(212,149,106,.06);}
+.man-inp::placeholder{color:#ddd;font-style:italic;}
+.man-row{display:flex;align-items:flex-start;gap:8px;padding:11px 14px;background:rgba(255,255,255,.8);border:1px solid rgba(0,0,0,.055);border-radius:10px;margin-bottom:7px;transition:all .2s;}
+.man-row:hover{border-color:rgba(212,149,106,.2);}
+.man-row.achieved{background:rgba(122,170,140,.06);border-color:rgba(122,170,140,.2);}
+.man-txt{flex:1;font-size:16px;font-family:'Manrope',sans-serif;color:#2a2a2a;line-height:1.5;}
+.man-date{font-family:'DM Mono',monospace;font-size:9px;color:#bbb;margin-top:3px;}
+.man-achieved-badge{font-family:'DM Mono',monospace;font-size:9px;background:rgba(122,170,140,.12);color:#7aaa8c;border-radius:10px;padding:2px 7px;letter-spacing:.06em;}
+
+/* ── Events ── */
+.ev-inp{flex:1;background:rgba(255,255,255,.88);border:1px solid rgba(0,0,0,.09);border-radius:10px;padding:9px 13px;color:#2a2a2a;font-size:16px;font-family:'Manrope',sans-serif;transition:border-color .2s;}
+.ev-inp:focus{outline:none;border-color:rgba(212,149,106,.5);}
+.ev-inp::placeholder{color:#ccc;}
+.ev-date{background:rgba(255,255,255,.88);border:1px solid rgba(0,0,0,.09);border-radius:10px;padding:8px 11px;color:#2a2a2a;font-size:13px;font-family:'DM Mono',monospace;transition:border-color .2s;cursor:pointer;}
+.ev-date:focus{outline:none;border-color:rgba(212,149,106,.5);}
+.ev-add{background:rgba(212,149,106,.13);border:1px solid rgba(212,149,106,.28);color:#d4956a;border-radius:10px;width:40px;font-size:20px;cursor:pointer;transition:all .2s;line-height:1;}
+.ev-add:hover{background:rgba(212,149,106,.22);transform:scale(1.05);}
+.ev-row{display:flex;align-items:center;gap:9px;padding:9px 13px;background:rgba(255,255,255,.8);border:1px solid rgba(0,0,0,.055);border-radius:10px;margin-bottom:6px;transition:all .2s;}
+.ev-row:hover{border-color:rgba(212,149,106,.2);}
+.ev-dot{width:7px;height:7px;border-radius:50%;background:#d4956a;flex-shrink:0;margin-top:2px;}
+.ev-txt{flex:1;font-size:16px;color:#2a2a2a;font-family:'Manrope',sans-serif;line-height:1.4;}
+.ev-del{background:none;border:none;cursor:pointer;font-size:15px;color:#ddd;padding:0 3px;transition:color .2s;line-height:1;}
+.ev-del:hover{color:#d4956a;}
+.ev-grp-hd{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#ccc;margin:14px 0 8px;}
+.ev-today-badge{font-family:'DM Mono',monospace;font-size:9px;background:rgba(122,170,140,.12);color:#7aaa8c;border-radius:9px;padding:2px 7px;letter-spacing:.06em;}
+
+/* ── Search ── */
+.sinp{background:rgba(255,255,255,.88);border:1px solid rgba(0,0,0,.09);border-radius:10px;padding:10px 14px;width:100%;color:#2a2a2a;font-size:16px;font-family:'Manrope',sans-serif;margin-bottom:16px;transition:border-color .2s;}
+.sinp:focus{outline:none;border-color:rgba(0,0,0,.2);}
+.sinp::placeholder{color:#ccc;}
+
+.empty{text-align:center;padding:44px 20px;color:#ccc;line-height:2.1;font-family:'Manrope',sans-serif;font-size:14px;}
+.ptitle{font-family:'Manrope',sans-serif;font-size:22px;font-weight:600;letter-spacing:-.02em;color:#2a2a2a;}
+.psub{font-family:'DM Mono',monospace;font-size:10px;color:#bbb;margin-top:3px;letter-spacing:.07em;}
+
+/* ── Splash ── */
+.splash{min-height:100vh;background:#faf8f4;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.splash-body{position:relative;z-index:1;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;padding:0 28px;animation:fadeUp .9s ease both;}
+.splash-glyph{font-size:48px;animation:sprout .8s ease both,seedglow 3s 1s ease-in-out infinite;display:block;margin-bottom:4px;}
+.splash-title{font-family:'Manrope',sans-serif;font-size:44px;font-weight:300;letter-spacing:.1em;color:#2a2a2a;}
+.splash-meaning{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;color:#ccc;text-transform:uppercase;margin-top:2px;}
+.splash-about{font-family:'Manrope',sans-serif;font-size:15px;line-height:1.85;color:#aaa;max-width:280px;margin-top:4px;}
+.splash-bar{width:110px;height:2px;background:#ede8e0;border-radius:2px;overflow:hidden;margin-top:10px;}
+.splash-fill{height:100%;background:linear-gradient(90deg,#7aaa8c,#b08ac8,#d4956a);border-radius:2px;animation:load 3.2s ease forwards;}
+
+@media(max-width:600px){.hdr{padding:10px 12px;}.nb{padding:5px 7px;font-size:9px;}.main{padding:14px 12px 80px;}.card{padding:13px 15px;}.pin-card{width:92vw;padding:28px 16px;}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// ── Date helpers (local time — fixes IST/timezone offset issues) ─────────────
+const fmtD=d=>{
+  const y=d.getFullYear(),
+        m=String(d.getMonth()+1).padStart(2,"0"),
+        day=String(d.getDate()).padStart(2,"0");
+  return`${y}-${m}-${day}`;
+};
+const todayStr=fmtD(new Date());
+const shiftDate=(s,n)=>{
+  const[y,m,d]=s.split("-").map(Number);
+  // Use local Date constructor to stay in local timezone
+  const nd=new Date(y,m-1,d+n);
+  return fmtD(nd);
+};
+const parseD=s=>{
+  const[y,m,d]=s.split("-").map(Number);
+  return new Date(y,m-1,d); // local time
+};
+const dayLabel=s=>{
+  if(s===todayStr)return"Today";
+  if(s===shiftDate(todayStr,-1))return"Yesterday";
+  return parseD(s).toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});
+};
+const getWeekDates=off=>{
+  const t=new Date(),day=t.getDay(),diff=(day===0?-6:1-day)+off*7;
+  const mon=new Date(t.getFullYear(),t.getMonth(),t.getDate()+diff);
+  return Array.from({length:7},(_,i)=>shiftDate(fmtD(mon),i));
+};
+const getMonthDates=off=>{
+  const t=new Date();
+  const s=new Date(t.getFullYear(),t.getMonth()+off,1);
+  const e=new Date(t.getFullYear(),t.getMonth()+off+1,0);
+  const a=[];
+  for(let d=new Date(s);d<=e;d.setDate(d.getDate()+1))
+    a.push(fmtD(new Date(d)));
+  return a;
+};
+
+// ── Storage ───────────────────────────────────────────────────────────────────
+const SK="seeds_v3",EVKEY="seeds_ev_v1",MANKEY="seeds_man_v1",PKEY="seeds_pin_v1",LKEY="seeds_lk_v1";
+const ob=(s,k=42)=>btoa(s.split("").map((c,i)=>String.fromCharCode(c.charCodeAt(0)^(k+i%13))).join(""));
+const dob=(s,k=42)=>{try{return atob(s).split("").map((c,i)=>String.fromCharCode(c.charCodeAt(0)^(k+i%13))).join("");}catch{return null;}};
+const hashPin=p=>{let h=0;for(let i=0;i<p.length;i++)h=(Math.imul(31,h)+p.charCodeAt(i))|0;return h.toString(36);};
+const loadJ=()=>{try{const r=localStorage.getItem(SK);if(!r)return{};const d=dob(r);return d?JSON.parse(d):{};}catch{return{};}};
+const saveJ=d=>{try{localStorage.setItem(SK,ob(JSON.stringify(d)));}catch{}};
+const loadEv=()=>{try{return JSON.parse(localStorage.getItem(EVKEY)||"[]");}catch{return[];}};
+const saveEv=d=>{try{localStorage.setItem(EVKEY,JSON.stringify(d));}catch{}};
+const loadMan=()=>{try{return JSON.parse(localStorage.getItem(MANKEY)||"[]");}catch{return[];}};
+const saveMan=d=>{try{localStorage.setItem(MANKEY,JSON.stringify(d));}catch{}};
+const getPin=()=>localStorage.getItem(PKEY)||null;
+const savePin=p=>localStorage.setItem(PKEY,hashPin(p));
+const checkPin=p=>hashPin(p)===getPin();
+const clearPin=()=>localStorage.removeItem(PKEY);
+const setLocked=v=>sessionStorage.setItem(LKEY,v?"1":"0");
+const getLocked=()=>sessionStorage.getItem(LKEY)!=="0";
+const emptyE=()=>({title:"",journal:"",gratitudes:["","",""],mood:null,todos:[],tags:[],createdAt:new Date().toISOString()});
+
+const MOODS=[
+  {emoji:"🫂",label:"Heavy", bg:"rgba(140,160,200,.13)",ac:"#8ca0c8"},
+  {emoji:"⛅",label:"Okay",  bg:"rgba(170,190,210,.13)",ac:"#aabece"},
+  {emoji:"🌸",label:"Calm",  bg:"rgba(200,155,175,.13)",ac:"#c89aae"},
+  {emoji:"☀️",label:"Good",  bg:"rgba(255,210,120,.13)",ac:"#e8c060"},
+  {emoji:"🥂",label:"Joyful",bg:"rgba(160,220,180,.13)",ac:"#7aaa8c"},
+];
+const TAGS=["Personal","Growth","Health","Work","Love","Dreams","Grateful","Reflection"];
+
+const buildWeekSummary=()=>null;
+const buildMonthSummary=()=>null;
+
+// ── Shared ────────────────────────────────────────────────────────────────────
+function Blobs(){return<div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,overflow:"hidden"}}><div className="blob blob1"/><div className="blob blob2"/><div className="blob blob3"/></div>;}
+
+function Splash(){return<div className="splash"><Blobs/><div className="splash-body"><span className="splash-glyph">🌱</span><h1 className="splash-title">seeds</h1><p className="splash-meaning">a journal for what you're growing</p><p className="splash-about">Every thought you write,<br/>every thing you're grateful for,<br/><em>is a seed planted in your story.</em></p><div className="splash-bar"><div className="splash-fill"/></div></div></div>;}
+
+// ── PIN ───────────────────────────────────────────────────────────────────────
+function PinScreen({mode,onSuccess,onSkip}){
+  const[input,setInput]=useState(""),[ confirm,setConfirm]=useState(""),[ step,setStep]=useState(1),[error,setError]=useState(""),[ ek,setEk]=useState(0);
+  const isSetup=mode==="setup";
+  const push=n=>{setError("");if(step===1&&input.length<4)setInput(p=>p+n);if(step===2&&confirm.length<4)setConfirm(p=>p+n);};
+  const del=()=>{setError("");if(step===1)setInput(p=>p.slice(0,-1));if(step===2)setConfirm(p=>p.slice(0,-1));};
+  useEffect(()=>{
+    if(isSetup){if(step===1&&input.length===4)setTimeout(()=>setStep(2),200);if(step===2&&confirm.length===4)setTimeout(()=>{if(input===confirm){savePin(input);setLocked(false);onSuccess();}else{setError("PINs don't match");setEk(k=>k+1);setConfirm("");setInput("");setStep(1);}},200);}
+    else{if(input.length===4)setTimeout(()=>{if(checkPin(input)){setLocked(false);onSuccess();}else{setError("Incorrect PIN");setEk(k=>k+1);setInput("");}},200);}
+  },[input,confirm]);
+  const cur=step===1?input:confirm;
+  return<div className="pin-wrap"><Blobs/><div className="pin-card"><span className="pin-icon">🌱</span><div style={{textAlign:"center"}}><div className="pin-title">seeds</div><div className="pin-sub" style={{marginTop:5}}>{isSetup?(step===1?"Set a 4-digit PIN":"Confirm your PIN"):"Enter your PIN"}</div></div>{isSetup&&<div className="setup-step">Step {step} of 2</div>}<div className="pin-dots">{[0,1,2,3].map(i=><div key={i} className={`pin-dot${cur.length>i?" filled":""}${error?" error":""}`}/>)}</div>{error&&<div key={ek} className="pin-err">{error}</div>}<div className="pin-grid">{[1,2,3,4,5,6,7,8,9].map(n=><button key={n} className="pin-btn" onClick={()=>push(String(n))}>{n}</button>)}<div/><button className="pin-btn" onClick={()=>push("0")}>0</button><button className="pin-btn del" onClick={del}>⌫</button></div>{isSetup&&onSkip&&<button className="pin-link" onClick={onSkip}>Skip for now</button>}{!isSetup&&<button className="pin-link" onClick={()=>{if(window.confirm("Clear your PIN?")){{clearPin();onSuccess();}}}}>Forgot PIN?</button>}</div></div>;
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
+function App(){
+  const[screen,setScreen]=useState("splash");
+  const[pinState,setPinState]=useState("idle");
+  const[view,setView]=useState("today");
+  const[entries,setEntries]=useState(loadJ);
+  const[events,setEvents]=useState(loadEv);
+  const[manifest,setManifest]=useState(loadMan);
+  const[selDate,setSelDate]=useState(todayStr);
+  const[wOff,setWOff]=useState(0);
+  const[mOff,setMOff]=useState(0);
+  const[searchQ,setSearchQ]=useState("");
+  const[saved,setSaved]=useState(false);
+  const stRef=useRef(null);
+
+  useEffect(()=>{saveJ(entries);},[entries]);
+  useEffect(()=>{saveEv(events);},[events]);
+  useEffect(()=>{saveMan(manifest);},[manifest]);
+  useEffect(()=>{const t=setTimeout(()=>{setScreen("app");const hp=!!getPin();if(hp&&getLocked())setPinState("locked");else if(!hp)setPinState("setup");else setPinState("idle");},3400);return()=>clearTimeout(t);},[]);
+  useEffect(()=>{const f=()=>{if(document.hidden&&getPin()){setLocked(true);setPinState("locked");}};document.addEventListener("visibilitychange",f);return()=>document.removeEventListener("visibilitychange",f);},[]);
+
+  const getE=d=>entries[d]||emptyE();
+  const upd=(d,p)=>{setSaved(false);clearTimeout(stRef.current);stRef.current=setTimeout(()=>setSaved(true),700);setEntries(prev=>({...prev,[d]:{...getE(d),...p}}));};
+
+  const wDates=getWeekDates(wOff),mDates=getMonthDates(mOff);
+  const wEnt=wDates.map(d=>({date:d,e:entries[d]})).filter(x=>x.e);
+  const mEnt=mDates.map(d=>({date:d,e:entries[d]})).filter(x=>x.e);
+  const searchRes=searchQ.length>1?Object.entries(entries).filter(([,e])=>e.title?.toLowerCase().includes(searchQ.toLowerCase())||e.journal?.toLowerCase().includes(searchQ.toLowerCase())||e.gratitudes?.some(g=>g?.toLowerCase().includes(searchQ.toLowerCase()))).sort(([a],[b])=>b.localeCompare(a)):[];
+
+  if(screen==="splash")return<Splash/>;
+  if(pinState==="setup")return<PinScreen mode="setup" onSuccess={()=>setPinState("idle")} onSkip={()=>setPinState("idle")}/>;
+  if(pinState==="locked")return<PinScreen mode="unlock" onSuccess={()=>setPinState("idle")}/>;
+
+  // Streak calculation
+  const streak=()=>{let c=0,d=new Date();while(true){const ds=fmtD(d),e=entries[ds];if(!e||(!e.journal?.trim()&&!e.gratitudes?.some(Boolean)))break;c++;d.setDate(d.getDate()-1);}return c;};
+  const streakCount=streak();
+
+  // Greeting based on time
+  const greeting=()=>{const h=new Date().getHours();if(h<12)return"Good morning";if(h<17)return"Good afternoon";if(h<21)return"Good evening";return"Good night";};
+
+  return(
+    <div style={{minHeight:"100vh",background:"#faf8f4",color:"#2a2a2a",fontFamily:"'Manrope',sans-serif",display:"flex",flexDirection:"column",position:"relative"}}>
+      <Blobs/>
+      <header className="hdr">
+        <div className="logo" onClick={()=>setView("today")}><span className="lmark">🌱</span><span className="lname">seeds</span>{saved&&<span className="stag">saved ✓</span>}</div>
+        <nav className="nav">
+          {[["today","Write"],["todos","Tasks"],["entries","Past"],["weekly","Week"],["monthly","Month"],["manifest","Future"],["search","Search"]].map(([v,l])=>(
+            <button key={v} className={`nb${view===v?" na":""}`} onClick={()=>setView(v)}>{l}</button>
+          ))}
+          <button className="lock-btn" onClick={()=>{setLocked(true);setPinState("locked");}}>🔒</button>
+        </nav>
+      </header>
+      <main className="main">
+        {view==="today"    &&<WriteView    date={selDate} entry={getE(selDate)} upd={p=>upd(selDate,p)} setDate={setSelDate} greeting={greeting()} streak={streakCount}/>}
+        {view==="todos"    &&<TodoView     date={selDate} entry={getE(selDate)} upd={p=>upd(selDate,p)}/>}
+        {view==="entries"  &&<EntriesView  entries={entries} onPick={d=>{setSelDate(d);setView("today");}}/>}
+        {view==="weekly"   &&<WeeklyView   wDates={wDates} wEnt={wEnt} entries={entries} wOff={wOff} setWOff={setWOff} onPick={d=>{setSelDate(d);setView("today");}}/>}
+        {view==="monthly"  &&<MonthlyView  mDates={mDates} mEnt={mEnt} entries={entries} mOff={mOff} setMOff={setMOff} onPick={d=>{setSelDate(d);setView("today");}}/>}
+        {view==="manifest" &&<ManifestView manifest={manifest} setManifest={setManifest}/>}
+        {view==="search"   &&<SearchView   q={searchQ} setQ={setSearchQ} res={searchRes} onPick={d=>{setSelDate(d);setView("today");}}/>}
+      </main>
+    </div>
+  );
+}
+
+// ── Write View ────────────────────────────────────────────────────────────────
+function WriteView({date,entry,upd,setDate,greeting,streak}){
+  const isToday=date===todayStr;
+  const hasContent=!!(entry.title?.trim()||entry.journal?.trim());
+  const[editing,setEditing]=useState(!hasContent);
+  const[doneStyle,setDoneStyle]=useState(()=>{try{return localStorage.getItem("seeds_done_style")||"read";}catch{return"read";}});
+  const titleRef=useRef(null);
+
+  useEffect(()=>{const has=!!(entry.title?.trim()||entry.journal?.trim());setEditing(!has);},[date]);
+  useEffect(()=>{if(editing&&!entry.title&&titleRef.current)titleRef.current.focus();},[editing,date]);
+
+  const saveDoneStyle=s=>{setDoneStyle(s);try{localStorage.setItem("seeds_done_style",s);}catch{}};
+  const moodObj=entry.mood!=null?MOODS[entry.mood]:null;
+  const grats=(entry.gratitudes||[]).filter(Boolean);
+
+  const DateNav=()=>(
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+      <button className="arw" onClick={()=>setDate(shiftDate(date,-1))}>‹</button>
+      <div style={{textAlign:"center"}}>
+        <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:"#c0c0c0",letterSpacing:".13em",textTransform:"uppercase"}}>{dayLabel(date)}</div>
+        <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"#ddd",marginTop:2}}>{date}{!isToday&&<span style={{color:"#7aaa8c"}}> · past</span>}</div>
+      </div>
+      <button className="arw" disabled={isToday} onClick={()=>{const n=shiftDate(date,1);if(n<=todayStr)setDate(n);}}>›</button>
+    </div>
+  );
+
+  if(editing)return(
+    <div className="view">
+      {/* Greeting + streak — only on today */}
+      {isToday&&(
+        <div style={{marginBottom:18,paddingBottom:16,borderBottom:"1px solid rgba(0,0,0,.05)"}}>
+          <div style={{fontSize:18,fontWeight:600,color:"#2a2a2a",marginBottom:4}}>{greeting} 🌱</div>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:"#bbb"}}>
+              {new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}
+            </div>
+            {streak>0&&(
+              <div style={{display:"flex",alignItems:"center",gap:4,background:"rgba(212,149,106,.1)",border:"1px solid rgba(212,149,106,.2)",borderRadius:20,padding:"2px 10px"}}>
+                <span style={{fontSize:12}}>🔥</span>
+                <span style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:"#d4956a"}}>{streak} day streak</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      <DateNav/>
+      {!isToday&&<div style={{background:"rgba(122,170,140,.07)",border:"1px solid rgba(122,170,140,.15)",borderRadius:9,padding:"7px 13px",marginBottom:11,fontFamily:"'DM Mono',monospace",fontSize:10,color:"#7aaa8c",letterSpacing:".07em"}}>✎ Saving to {date}</div>}
+      <div className="page">
+        <input ref={titleRef} className="page-title" placeholder="Title"
+          value={entry.title||""} onChange={e=>upd({title:e.target.value})}
+          onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();document.getElementById("jbody")?.focus();}}}
+        />
+        {/* SCROLL FIX: fixed height with overflow:auto — cursor never jumps */}
+        <textarea id="jbody" className="page-body" placeholder="Write anything…"
+          value={entry.journal||""}
+          onChange={e=>upd({journal:e.target.value})}
+          style={{minHeight:220,maxHeight:420,overflowY:"auto",resize:"none"}}
+        />
+        <div style={{height:"1px",background:"rgba(0,0,0,.055)",margin:"22px 0 18px"}}/>
+        {/* Mood */}
+        <div style={{marginBottom:20}}>
+          <div className="s-lbl">How are you feeling?</div>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:10}}>
+            {MOODS.map((m,i)=>(
+              <button key={i} onClick={()=>upd({mood:entry.mood===i?null:i})}
+                style={{display:"flex",alignItems:"center",gap:5,padding:"5px 11px",borderRadius:18,border:`1px solid ${entry.mood===i?m.ac:"rgba(0,0,0,.09)"}`,background:entry.mood===i?m.bg:"transparent",cursor:"pointer",transition:"all .2s",fontFamily:"inherit"}}>
+                <span style={{fontSize:16}}>{m.emoji}</span>
+                <span style={{fontFamily:"'DM Mono',monospace",fontSize:9.5,color:entry.mood===i?m.ac:"#bbb",letterSpacing:".05em"}}>{m.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        {/* Gratitude */}
+        <div style={{marginBottom:hasContent?16:20}}>
+          <div className="s-lbl">Grateful for</div>
+          <div style={{display:"flex",flexDirection:"column",gap:5,marginTop:10}}>
+            {(entry.gratitudes||[""]).map((g,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"flex-start",gap:7}}>
+                <span style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:"rgba(122,170,140,.4)",paddingTop:8,minWidth:12,userSelect:"none"}}>{i+1}</span>
+                <textarea className="gbox-inline" rows={1} value={g} placeholder="Something you're grateful for…"
+                  onChange={e=>{const a=[...(entry.gratitudes||[])];a[i]=e.target.value;upd({gratitudes:a});}}
+                />
+                {(entry.gratitudes||[]).length>1&&<button onClick={()=>{const a=[...(entry.gratitudes||[])];a.splice(i,1);upd({gratitudes:a});}} style={{background:"none",border:"none",cursor:"pointer",color:"#ddd",fontSize:15,paddingTop:7,flexShrink:0,lineHeight:1,transition:"color .2s"}} onMouseEnter={e=>e.target.style.color="#7aaa8c"} onMouseLeave={e=>e.target.style.color="#ddd"}>×</button>}
+              </div>
+            ))}
+            <button onClick={()=>upd({gratitudes:[...(entry.gratitudes||[]),""]}) } style={{alignSelf:"flex-start",background:"none",border:"none",fontFamily:"'DM Mono',monospace",fontSize:10,color:"rgba(122,170,140,.4)",cursor:"pointer",padding:"3px 0",letterSpacing:".06em",transition:"color .2s"}} onMouseEnter={e=>e.currentTarget.style.color="#7aaa8c"} onMouseLeave={e=>e.currentTarget.style.color="rgba(122,170,140,.4)"}>+ add more</button>
+          </div>
+        </div>
+        {hasContent&&<div style={{display:"flex",justifyContent:"flex-end"}}><button onClick={()=>setEditing(false)} style={{background:"rgba(122,170,140,.12)",border:"1px solid rgba(122,170,140,.3)",borderRadius:18,padding:"6px 18px",fontFamily:"'DM Mono',monospace",fontSize:10,color:"#7aaa8c",cursor:"pointer",letterSpacing:".08em",transition:"all .2s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(122,170,140,.22)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(122,170,140,.12)"}>done ✓</button></div>}
+      </div>
+    </div>
+  );
+
+  // Read mode
+  return(
+    <div className="view">
+      <DateNav/>
+      <div style={{display:"flex",justifyContent:"flex-end",marginBottom:8,gap:5,alignItems:"center"}}>
+        <span style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"#ddd",letterSpacing:".1em"}}>view</span>
+        {[["read","📖"],["done","✅"],["blank","○"]].map(([s,icon])=>(
+          <button key={s} onClick={()=>saveDoneStyle(s)} style={{background:doneStyle===s?"rgba(122,170,140,.12)":"none",border:`1px solid ${doneStyle===s?"rgba(122,170,140,.35)":"rgba(0,0,0,.1)"}`,borderRadius:18,padding:"3px 9px",fontFamily:"'DM Mono',monospace",fontSize:10,color:doneStyle===s?"#7aaa8c":"#ccc",cursor:"pointer",transition:"all .2s"}}>{icon}</button>
+        ))}
+        <button className="read-edit-btn" onClick={()=>setEditing(true)}>edit ✎</button>
+      </div>
+      {doneStyle==="read"&&(
+        <div className="read-page">
+          {entry.title?.trim()&&<div className="read-title">{entry.title}</div>}
+          {entry.journal?.trim()&&<div className="read-body">{entry.journal}</div>}
+          {(moodObj||grats.length>0)&&<div style={{height:"1px",background:"rgba(0,0,0,.055)",margin:"18px 0 15px"}}/>}
+          {moodObj&&<div style={{display:"flex",alignItems:"center",gap:8,marginBottom:grats.length>0?13:0}}><span style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"#ccc",letterSpacing:".13em",textTransform:"uppercase"}}>Feeling</span><span style={{display:"flex",alignItems:"center",gap:5,background:moodObj.bg,border:`1px solid ${moodObj.ac}`,borderRadius:18,padding:"3px 11px"}}><span style={{fontSize:14}}>{moodObj.emoji}</span><span style={{fontFamily:"'DM Mono',monospace",fontSize:9.5,color:moodObj.ac,letterSpacing:".05em"}}>{moodObj.label}</span></span></div>}
+          {grats.length>0&&<div><div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"#ccc",letterSpacing:".13em",textTransform:"uppercase",marginBottom:7}}>Grateful for</div>{grats.map((g,i)=><div key={i} style={{display:"flex",gap:7,alignItems:"flex-start",marginBottom:5}}><span style={{color:"#7aaa8c",fontSize:12,paddingTop:2}}>✦</span><span style={{fontFamily:"'Manrope',sans-serif",fontSize:16,color:"#555",lineHeight:1.65,fontStyle:"italic"}}>{g}</span></div>)}</div>}
+        </div>
+      )}
+      {doneStyle==="done"&&(
+        <div className="done-page">
+          <span className="done-icon">🌱</span>
+          <div className="done-msg">{isToday?"Written for today":dayLabel(date)}</div>
+          {entry.title?.trim()&&<div style={{fontFamily:"'Manrope',sans-serif",fontSize:16,color:"#aaa",fontStyle:"italic"}}>"{entry.title}"</div>}
+          <div className="done-sub">{date}</div>
+          {moodObj&&<div style={{marginTop:4,fontSize:18}}>{moodObj.emoji} <span style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:moodObj.ac}}>{moodObj.label}</span></div>}
+          {grats.length>0&&<div style={{marginTop:8,display:"flex",flexDirection:"column",gap:4,width:"100%",textAlign:"left"}}>{grats.map((g,i)=><div key={i} style={{fontFamily:"'Manrope',sans-serif",fontSize:15,color:"#aaa",fontStyle:"italic"}}>✦ {g}</div>)}</div>}
+        </div>
+      )}
+      {doneStyle==="blank"&&(
+        <div style={{background:"rgba(255,255,255,.86)",border:"1px solid rgba(0,0,0,.06)",borderRadius:16,padding:"50px 24px",textAlign:"center",backdropFilter:"blur(10px)"}}>
+          <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:"#ddd",letterSpacing:".18em",textTransform:"uppercase"}}>{date}</div>
+          <div style={{width:26,height:1,background:"rgba(0,0,0,.07)",margin:"13px auto 0"}}/>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Todo View — dual ✅ ❌ marks ──────────────────────────────────────────────
+function TodoView({date,entry,upd}){
+  const[text,setText]=useState("");
+  const ref=useRef(null);
+  const todos=entry.todos||[];
+  const add=()=>{const t=text.trim();if(!t)return;upd({todos:[...todos,{id:Date.now(),text:t,status:null}]});setText("");ref.current?.focus();};
+  // status: null = pending, "done" = ✅, "fail" = ❌
+  const setStatus=(id,s)=>upd({todos:todos.map(t=>t.id===id?{...t,status:t.status===s?null:s}:t)});
+  const remove=id=>upd({todos:todos.filter(t=>t.id!==id)});
+
+  const pending=todos.filter(t=>!t.status);
+  const done_=todos.filter(t=>t.status==="done");
+  const fail_=todos.filter(t=>t.status==="fail");
+
+  const doneCount=done_.length, failCount=fail_.length, total=todos.length;
+
+  const TaskRow=({t})=>(
+    <div className={`trow${t.status==="done"?" "+(t.status==="done"?"":""):""}`} style={{opacity:t.status?0.65:1}}>
+      <span className="ttxt" style={{textDecoration:t.status?"line-through":"none",color:t.status?"#aaa":"#2a2a2a"}}>{t.text}</span>
+      <button className={`mark-btn${t.status==="done"?" active-done":""}`} onClick={()=>setStatus(t.id,"done")} title="Mark done">✅</button>
+      <button className={`mark-btn${t.status==="fail"?" active-fail":""}`} onClick={()=>setStatus(t.id,"fail")} title="Mark not done">❌</button>
+      <button style={{background:"none",border:"none",cursor:"pointer",fontSize:14,color:"#ddd",padding:"0 3px",lineHeight:1,transition:"color .2s"}} onClick={()=>remove(t.id)} onMouseEnter={e=>e.target.style.color="#d4956a"} onMouseLeave={e=>e.target.style.color="#ddd"}>×</button>
+    </div>
+  );
+
+  return(
+    <div className="view">
+      <div style={{marginBottom:16}}>
+        <div className="ptitle">Tasks</div>
+        <div className="psub">{dayLabel(date)}</div>
+        {total>0&&<div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:"#aaa",marginTop:5,display:"flex",gap:10}}>
+          <span style={{color:"#7aaa8c"}}>✅ {doneCount} done</span>
+          <span style={{color:"#e08080"}}>❌ {failCount} not done</span>
+          {pending.length>0&&<span style={{color:"#bbb"}}>◯ {pending.length} pending</span>}
+        </div>}
+      </div>
+      <div style={{display:"flex",gap:7,marginBottom:16}}>
+        <input ref={ref} className="ainp" placeholder="Add a task…" value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&add()}/>
+        <button className="addbtn" onClick={add}>＋</button>
+      </div>
+      {pending.length>0&&<div style={{marginBottom:14}}><div className="clbl">Pending</div>{pending.map(t=><TaskRow key={t.id} t={t}/>)}</div>}
+      {done_.length>0&&<div style={{marginBottom:14}}><div className="clbl">Completed ✅</div>{done_.map(t=><TaskRow key={t.id} t={t}/>)}</div>}
+      {fail_.length>0&&<div><div className="clbl">Didn't complete ❌</div>{fail_.map(t=><TaskRow key={t.id} t={t}/>)}</div>}
+      {todos.length===0&&<div className="empty"><div style={{fontSize:28,marginBottom:8}}>🌿</div><p>Nothing here yet.</p></div>}
+    </div>
+  );
+}
+
+// ── Past Entries ──────────────────────────────────────────────────────────────
+function EntriesView({entries,onPick}){
+  const sorted=Object.keys(entries).sort((a,b)=>b.localeCompare(a));
+  return(
+    <div className="view">
+      <div style={{marginBottom:16}}><div className="ptitle">Past Entries</div><div className="psub">Tap any to open and edit</div></div>
+      {sorted.length===0&&<div className="empty"><div style={{fontSize:28}}>🌱</div><p>Your first entry is waiting.</p></div>}
+      {sorted.map(d=>{const e=entries[d],m=e.mood!=null?MOODS[e.mood]:null;const dc=(e.todos||[]).filter(t=>t.status==="done").length,fc=(e.todos||[]).filter(t=>t.status==="fail").length,tc=(e.todos||[]).length;return(
+        <div key={d} className="ecard" onClick={()=>onPick(d)}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:e.title?.trim()?4:8}}>
+            <div><span style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:"#7aaa8c",letterSpacing:".07em"}}>{dayLabel(d)}</span><span style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"#bbb"}}> · {d}</span></div>
+            <div style={{display:"flex",gap:6,alignItems:"center"}}>
+              {tc>0&&<span style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"#aaa"}}>✅{dc} ❌{fc}</span>}
+              {m&&<span style={{fontSize:15}}>{m.emoji}</span>}
+            </div>
+          </div>
+          {e.title?.trim()&&<div style={{fontFamily:"'Manrope',sans-serif",fontSize:17,fontWeight:500,color:"#2a2a2a",marginBottom:4}}>{e.title}</div>}
+          {e.journal?.trim()&&<p style={{color:"#999",fontSize:15,lineHeight:1.65,fontStyle:"italic",marginBottom:7}}>{e.journal.slice(0,120)}{e.journal.length>120?"…":""}</p>}
+          {e.gratitudes?.some(Boolean)&&<div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:6}}>{e.gratitudes.filter(Boolean).slice(0,3).map((g,i)=><span key={i} className="gchip">✦ {g.slice(0,36)}</span>)}</div>}
+          {e.tags?.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:5}}>{e.tags.map(t=><span key={t} className="tchip">{t}</span>)}</div>}
+        </div>
+      );})}
+    </div>
+  );
+}
+
+// ── Weekly ────────────────────────────────────────────────────────────────────
+function WeeklyView({wDates,wEnt,entries,wOff,setWOff,onPick}){
+  const s=parseD(wDates[0]),e=parseD(wDates[6]);
+  const allG=wEnt.flatMap(({date,e})=>(e.gratitudes||[]).filter(Boolean).map(g=>({date,g})));
+  return(
+    <div className="view">
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+        <button className="arw" onClick={()=>setWOff(w=>w-1)}>‹</button>
+        <div style={{textAlign:"center"}}><div className="ptitle">This Week</div><div className="psub">{s.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – {e.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</div></div>
+        <button className="arw" disabled={wOff>=0} onClick={()=>setWOff(w=>w+1)}>›</button>
+      </div>
+      <div className="card">
+        <div className="clbl">Mood across the week</div>
+        <div style={{display:"flex",gap:4}}>
+          {wDates.map(d=>{const en=entries[d],mo=en?.mood!=null?MOODS[en.mood]:null;return(
+            <div key={d} className={`wcell${en?" clickable":""}`} onClick={()=>en&&onPick(d)}>
+              <div style={{fontSize:17,opacity:en?1:.15}}>{mo?mo.emoji:"○"}</div>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,color:"#bbb",marginTop:2}}>{parseD(d).toLocaleDateString("en-US",{weekday:"short"})}</div>
+            </div>
+          );})}
+        </div>
+      </div>
+      {/* Task summary for the week */}
+      {(()=>{
+        const allT=wEnt.flatMap(({date,e})=>(e.todos||[]).map(t=>({...t,date})));
+        const dc=allT.filter(t=>t.status==="done").length,fc=allT.filter(t=>t.status==="fail").length,pc=allT.filter(t=>!t.status).length;
+        if(!allT.length)return null;
+        return(
+          <div className="card">
+            <div className="clbl">Tasks this week</div>
+            <div style={{display:"flex",gap:14,marginBottom:10}}>
+              <span style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:"#7aaa8c"}}>✅ {dc} done</span>
+              <span style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:"#e08080"}}>❌ {fc} not done</span>
+              {pc>0&&<span style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:"#bbb"}}>◯ {pc} pending</span>}
+            </div>
+            {allT.map((t,i)=>(
+              <div key={i} style={{display:"flex",gap:8,alignItems:"center",marginBottom:5}}>
+                <span style={{fontSize:13}}>{t.status==="done"?"✅":t.status==="fail"?"❌":"○"}</span>
+                <span style={{fontFamily:"'Manrope',sans-serif",fontSize:15,color:t.status?"#aaa":"#2a2a2a",textDecoration:t.status?"line-through":"none",flex:1}}>{t.text}</span>
+                <span style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"#bbb"}}>{parseD(t.date).toLocaleDateString("en-US",{weekday:"short"})}</span>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+      {allG.length>0&&<div className="card"><div className="clbl">✦ Gratitudes this week</div><div style={{display:"flex",flexDirection:"column",gap:8}}>{allG.map((x,i)=><div key={i} style={{display:"flex",gap:12,alignItems:"flex-start"}}><span style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"#bbb",paddingTop:3,minWidth:28}}>{parseD(x.date).toLocaleDateString("en-US",{weekday:"short"})}</span><span style={{color:"#7aaa8c",fontSize:16,fontStyle:"italic",lineHeight:1.65,fontFamily:"'Manrope',sans-serif"}}>{x.g}</span></div>)}</div></div>}
+      {wEnt.filter(x=>x.e.journal?.trim()).length>0&&<div className="card"><div className="clbl">Journal this week</div>{wEnt.filter(x=>x.e.journal?.trim()).map(({date,e})=><div key={date} onClick={()=>onPick(date)} style={{padding:"10px 12px",background:"rgba(0,0,0,.012)",borderRadius:9,marginBottom:7,cursor:"pointer",border:"1px solid transparent",transition:"border-color .2s"}} onMouseEnter={el=>el.currentTarget.style.borderColor="rgba(0,0,0,.09)"} onMouseLeave={el=>el.currentTarget.style.borderColor="transparent"}><div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"#bbb",marginBottom:4}}>{dayLabel(date)}</div>{e.title?.trim()&&<div style={{fontFamily:"'Manrope',sans-serif",fontSize:15,fontWeight:500,color:"#2a2a2a",marginBottom:2}}>{e.title}</div>}<p style={{margin:0,color:"#999",fontSize:15,lineHeight:1.7,fontStyle:"italic"}}>{e.journal.slice(0,150)}{e.journal.length>150?"…":""}</p></div>)}</div>}
+      {wEnt.length===0&&<div className="empty"><div style={{fontSize:26}}>🌱</div><p>No entries this week yet.</p></div>}
+    </div>
+  );
+}
+
+// ── Monthly ───────────────────────────────────────────────────────────────────
+function MonthlyView({mDates,mEnt,entries,mOff,setMOff,onPick}){
+  const name=parseD(mDates[0]).toLocaleDateString("en-US",{month:"long",year:"numeric"});
+  const allG=mEnt.flatMap(({date,e})=>(e.gratitudes||[]).filter(Boolean).map(g=>({date,g})));
+  const tagF={};mEnt.forEach(({e})=>(e.tags||[]).forEach(t=>{tagF[t]=(tagF[t]||0)+1;}));
+  return(
+    <div className="view">
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+        <button className="arw" onClick={()=>setMOff(m=>m-1)}>‹</button>
+        <div style={{textAlign:"center"}}><div className="ptitle">{name}</div><div className="psub">monthly reflection</div></div>
+        <button className="arw" disabled={mOff>=0} onClick={()=>setMOff(m=>m+1)}>›</button>
+      </div>
+      <div className="card"><div className="clbl">Your month at a glance</div>
+        <div className="cal">
+          {["Mo","Tu","We","Th","Fr","Sa","Su"].map(d=><div key={d} className="calhd">{d}</div>)}
+          {Array.from({length:(parseD(mDates[0]).getDay()||7)-1},(_,i)=><div key={"_"+i}/>)}
+          {mDates.map(d=>{const e=entries[d],has=e&&(e.journal?.trim()||e.gratitudes?.some(Boolean)||e.todos?.length),m=e?.mood!=null?MOODS[e.mood]:null;return(
+            <div key={d} className={`calday${has?" calhas":""}${d===todayStr?" caltoday":""}`} onClick={()=>has&&onPick(d)} style={has&&m?{background:m.bg,borderColor:m.ac}:{}}>
+              <span className="caln">{parseD(d).getDate()}</span>
+              {has&&m&&<span style={{fontSize:8,lineHeight:1}}>{m.emoji}</span>}
+            </div>
+          );})}
+        </div>
+      </div>
+      {allG.length>0&&<div className="card"><div className="clbl">✦ What you were grateful for</div><div style={{display:"flex",flexDirection:"column",gap:8}}>{allG.map((x,i)=><div key={i} style={{display:"flex",gap:12,alignItems:"flex-start"}}><span style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"#bbb",paddingTop:3,minWidth:20}}>{parseD(x.date).getDate()}</span><span style={{color:"#7aaa8c",fontSize:16,fontStyle:"italic",lineHeight:1.65,fontFamily:"'Manrope',sans-serif"}}>{x.g}</span></div>)}</div></div>}
+      {Object.keys(tagF).length>0&&<div className="card"><div className="clbl">Topics you wrote about</div><div style={{display:"flex",flexWrap:"wrap",gap:6}}>{Object.entries(tagF).sort((a,b)=>b[1]-a[1]).map(([t])=><span key={t} style={{fontFamily:"'DM Mono',monospace",fontSize:10,padding:"3px 12px",borderRadius:18,background:"rgba(122,170,140,.07)",border:"1px solid rgba(122,170,140,.18)",color:"#7aaa8c"}}>{t}</span>)}</div></div>}
+      {mEnt.length===0&&<div className="empty"><div style={{fontSize:26}}>🌱</div><p>No entries this month yet.</p></div>}
+    </div>
+  );
+}
+
+// ── Manifestation / Future Self ───────────────────────────────────────────────
+function ManifestView({manifest,setManifest}){
+  const[text,setText]=useState("");
+  const ref=useRef(null);
+
+  const add=()=>{
+    const t=text.trim();if(!t)return;
+    setManifest(prev=>[{id:Date.now(),text:t,date:todayStr,achieved:false,achievedDate:null},...prev]);
+    setText("");ref.current?.focus();
+  };
+  const toggle=id=>setManifest(prev=>prev.map(m=>m.id===id?{...m,achieved:!m.achieved,achievedDate:m.achieved?null:todayStr}:m));
+  const remove=id=>setManifest(prev=>prev.filter(m=>m.id!==id));
+
+  const pending=manifest.filter(m=>!m.achieved);
+  const achieved=manifest.filter(m=>m.achieved);
+
+  return(
+    <div className="view">
+      <div style={{marginBottom:16}}>
+        <div className="ptitle">Future Self</div>
+        <div className="psub">Things you're calling into your life</div>
+      </div>
+
+      <div className="card" style={{background:"linear-gradient(135deg,rgba(245,240,255,.97),rgba(255,245,235,.97)",border:"1px solid rgba(212,149,106,.15)"}}>
+        <div className="clbl" style={{color:"#d4956a"}}>Plant a seed for the future</div>
+        <div style={{display:"flex",gap:7}}>
+          <textarea ref={ref} className="man-inp" rows={2} placeholder="Something you want to achieve, become, or experience…" value={text} onChange={e=>setText(e.target.value)}/>
+          <button onClick={add} style={{background:"rgba(212,149,106,.13)",border:"1px solid rgba(212,149,106,.28)",color:"#d4956a",borderRadius:10,width:40,fontSize:20,cursor:"pointer",transition:"all .2s",lineHeight:1,flexShrink:0}} onMouseEnter={e=>e.currentTarget.style.background="rgba(212,149,106,.22)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(212,149,106,.13)"}>＋</button>
+        </div>
+      </div>
+
+      {manifest.length===0&&<div className="empty"><div style={{fontSize:28,marginBottom:8}}>🌠</div><p>What does your future self look like?<br/>Write it here — then watch it grow.</p></div>}
+
+      {pending.length>0&&(
+        <div style={{marginBottom:16}}>
+          <div className="clbl">Growing 🌱</div>
+          {pending.map(m=>(
+            <div key={m.id} className="man-row">
+              <div style={{flex:1}}>
+                <div className="man-txt">{m.text}</div>
+                <div className="man-date">Planted {parseD(m.date).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</div>
+              </div>
+              <button onClick={()=>toggle(m.id)} style={{background:"none",border:"1px solid rgba(122,170,140,.25)",borderRadius:18,padding:"4px 10px",fontFamily:"'DM Mono',monospace",fontSize:9,color:"#7aaa8c",cursor:"pointer",transition:"all .2s",marginLeft:6,flexShrink:0,letterSpacing:".07em"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(122,170,140,.1)"} onMouseLeave={e=>e.currentTarget.style.background="none"}>achieved ✓</button>
+              <button onClick={()=>remove(m.id)} style={{background:"none",border:"none",cursor:"pointer",fontSize:14,color:"#ddd",padding:"0 4px",transition:"color .2s",marginLeft:2}} onMouseEnter={e=>e.target.style.color="#d4956a"} onMouseLeave={e=>e.target.style.color="#ddd"}>×</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {achieved.length>0&&(
+        <div>
+          <div className="clbl">Manifested ✨</div>
+          {achieved.map(m=>(
+            <div key={m.id} className="man-row achieved">
+              <div style={{flex:1}}>
+                <div className="man-txt" style={{color:"#7aaa8c"}}>{m.text}</div>
+                <div style={{display:"flex",gap:8,marginTop:3,alignItems:"center"}}>
+                  <span className="man-achieved-badge">✨ achieved</span>
+                  {m.achievedDate&&<span className="man-date">{parseD(m.achievedDate).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</span>}
+                  <span className="man-date">· planted {parseD(m.date).toLocaleDateString("en-US",{month:"short",year:"numeric"})}</span>
+                </div>
+              </div>
+              <button onClick={()=>toggle(m.id)} style={{background:"none",border:"none",fontFamily:"'DM Mono',monospace",fontSize:9,color:"#bbb",cursor:"pointer",padding:"0 6px",letterSpacing:".07em"}} title="Mark as not yet achieved">undo</button>
+              <button onClick={()=>remove(m.id)} style={{background:"none",border:"none",cursor:"pointer",fontSize:14,color:"#ddd",padding:"0 4px",transition:"color .2s"}} onMouseEnter={e=>e.target.style.color="#d4956a"} onMouseLeave={e=>e.target.style.color="#ddd"}>×</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Events ────────────────────────────────────────────────────────────────────
+function EventsView({events,setEvents}){
+  const[text,setText]=useState(""),[ evDate,setEvDate]=useState(todayStr),[ evTime,setEvTime]=useState("");
+  const add=()=>{const t=text.trim();if(!t)return;setEvents(prev=>[...prev,{id:Date.now(),text:t,date:evDate,time:evTime.trim()||null}].sort((a,b)=>a.date.localeCompare(b.date)||(a.time||"99:99").localeCompare(b.time||"99:99")));setText("");setEvTime("");};
+  const remove=id=>setEvents(prev=>prev.filter(e=>e.id!==id));
+  const grouped={};events.forEach(ev=>{if(!grouped[ev.date])grouped[ev.date]=[];grouped[ev.date].push(ev);});
+  const sortedDates=Object.keys(grouped).sort();
+  const upcoming=sortedDates.filter(d=>d>=todayStr),past=sortedDates.filter(d=>d<todayStr).reverse();
+  const fmtEvDate=d=>{if(d===todayStr)return"Today";if(d===shiftDate(todayStr,1))return"Tomorrow";if(d===shiftDate(todayStr,-1))return"Yesterday";return parseD(d).toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});};
+  return(
+    <div className="view">
+      <div style={{marginBottom:16}}><div className="ptitle">Events</div><div className="psub">Notes, reminders and things coming up</div></div>
+      <div className="card" style={{marginBottom:14}}>
+        <div className="clbl">Add an event</div>
+        <div style={{display:"flex",gap:7,marginBottom:8}}><input className="ev-inp" placeholder="What's happening…" value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&add()}/><button className="ev-add" onClick={add}>＋</button></div>
+        <div style={{display:"flex",gap:7,flexWrap:"wrap"}}><input type="date" className="ev-date" value={evDate} onChange={e=>setEvDate(e.target.value)}/><input type="time" className="ev-date" value={evTime} onChange={e=>setEvTime(e.target.value)} style={{minWidth:110}}/></div>
+      </div>
+      {events.length===0&&<div className="empty"><div style={{fontSize:28,marginBottom:8}}>📅</div><p>No events yet.</p></div>}
+      {upcoming.length>0&&<div><div className="ev-grp-hd">Upcoming</div>{upcoming.map(d=><div key={d}><div style={{display:"flex",alignItems:"center",gap:7,marginBottom:6}}><span style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:d===todayStr?"#7aaa8c":"#2a2a2a",letterSpacing:".05em"}}>{fmtEvDate(d)}</span>{d===todayStr&&<span className="ev-today-badge">today</span>}<span style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"#ccc"}}>{d}</span></div>{grouped[d].map(ev=><div key={ev.id} className="ev-row"><div className="ev-dot"/><div style={{flex:1}}><div className="ev-txt">{ev.text}</div>{ev.time&&<div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"#bbb",marginTop:2}}>{ev.time}</div>}</div><button className="ev-del" onClick={()=>remove(ev.id)}>×</button></div>)}<div style={{height:8}}/></div>)}</div>}
+      {past.length>0&&<div><div className="ev-grp-hd">Past</div>{past.map(d=><div key={d}><div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:"#ccc",marginBottom:6,letterSpacing:".05em"}}>{fmtEvDate(d)} <span style={{fontSize:9}}>{d}</span></div>{grouped[d].map(ev=><div key={ev.id} className="ev-row" style={{opacity:.45}}><div className="ev-dot" style={{background:"#ccc"}}/><div style={{flex:1}}><div className="ev-txt" style={{color:"#aaa",textDecoration:"line-through"}}>{ev.text}</div>{ev.time&&<div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"#ccc",marginTop:2}}>{ev.time}</div>}</div><button className="ev-del" onClick={()=>remove(ev.id)}>×</button></div>)}<div style={{height:7}}/></div>)}</div>}
+    </div>
+  );
+}
+
+// ── Search ────────────────────────────────────────────────────────────────────
+function SearchView({q,setQ,res,onPick}){
+  return(
+    <div className="view">
+      <div style={{marginBottom:14}}><div className="ptitle">Search</div><div className="psub">Look back through your days</div></div>
+      <input className="sinp" placeholder="Search entries, titles, gratitudes…" value={q} onChange={e=>setQ(e.target.value)}/>
+      {q.length>1&&res.length===0&&<div className="empty"><p>Nothing found for "{q}"</p></div>}
+      {res.map(([d,e])=>(
+        <div key={d} className="ecard" onClick={()=>onPick(d)}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:e.title?.trim()?3:7}}>
+            <span style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:"#7aaa8c",letterSpacing:".07em"}}>{dayLabel(d)}</span>
+            {e.mood!=null&&<span style={{fontSize:14}}>{MOODS[e.mood].emoji}</span>}
+          </div>
+          {e.title?.trim()&&<div style={{fontFamily:"'Manrope',sans-serif",fontSize:17,fontWeight:500,color:"#2a2a2a",marginBottom:4}}>{e.title}</div>}
+          {e.journal?.trim()&&<p style={{color:"#999",fontSize:15,lineHeight:1.65,fontStyle:"italic",marginBottom:5}}>{e.journal.slice(0,130)}…</p>}
+          {e.gratitudes?.filter(Boolean).map((g,i)=><div key={i} style={{color:"#7aaa8c",fontSize:14,fontStyle:"italic",marginTop:3}}>✦ {g}</div>)}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
