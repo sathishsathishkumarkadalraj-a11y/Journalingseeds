@@ -18,11 +18,15 @@ exports.handler = async (event) => {
     const { prompt } = JSON.parse(event.body || "{}");
     if (!prompt) return { statusCode: 400, headers, body: JSON.stringify({ error: "No prompt provided" }) };
 
+    // Key stored securely in Netlify environment variables
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) return { statusCode: 500, headers, body: JSON.stringify({ error: "API key not configured" }) };
+
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Bearer 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"
+        "Authorization": "Bearer " + apiKey
       },
       body: JSON.stringify({
         model: "llama3-8b-8192",
