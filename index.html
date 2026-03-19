@@ -697,7 +697,29 @@ function SearchView({q,setQ,res,onPick}){
     </div>
   );
 }
+<script>
+async function getReflection(prompt) {
+  try {
+    const res = await fetch("https://ouylavxahevdhdzwxnto.supabase.co/functions/v1/reflect", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ prompt: prompt })
+    });
 
+    const data = await res.json();
+
+    if (data.text) {
+      return data.text;
+    } else {
+      return "Error getting response";
+    }
+
+  } catch (err) {
+    return "Something went wrong";
+  }
+}
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 </body>
