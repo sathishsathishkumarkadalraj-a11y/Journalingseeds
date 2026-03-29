@@ -788,7 +788,7 @@ function MoodSelector({entry,upd}){
         <div style={{marginTop:8,display:"flex",alignItems:"center",gap:6}}>
           <span style={{fontSize:13,color:"var(--muted)"}}>Feeling:</span>
           <span style={{display:"flex",alignItems:"center",gap:4,background:ALL_MOODS[entry.mood].bg,border:`1px solid ${ALL_MOODS[entry.mood].ac}`,borderRadius:16,padding:"3px 10px"}}>
-            <span style={{fontSize:14}}>{ALL_[...MOODS,...EXTRA_MOODS][entry.mood].emoji}</span>
+            <span style={{fontSize:14}}>{ALL_MOODS[entry.mood].emoji}</span>
             <span style={{fontSize:12,color:ALL_MOODS[entry.mood].ac}}>{ALL_MOODS[entry.mood].label}</span>
           </span>
         </div>
